@@ -62,7 +62,7 @@ func handleTunnelEndpointProcessed(te *netv1alpha1.TunnelEndpoint) {
 	klog.V(5).Infof("Received update for TunnelEndpoint %q", namespacedName(te))
 
 	if te.Status.Connection.Status == netv1alpha1.Connected {
-		id := te.Spec.ClusterID
+		id := te.Spec.ClusterIdentity.ClusterID
 		M().ClusterID(id).SetNetworkSetupEndTimestamp(time.Now())
 	}
 }

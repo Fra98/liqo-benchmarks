@@ -3,11 +3,11 @@ consumer:
 
   resources:
     limits:
-      cpu: 8000m
-      memory: 32768Mi
+      cpu: 4000m
+      memory: 4096Mi #32768Mi
     requests:
-      cpu: 8000m
-      memory: 32768Mi
+      cpu: 4000m
+      memory: 4096Mi #32768Mi
 
   affinity:
     nodeAffinity:
@@ -17,7 +17,7 @@ consumer:
           - key: kubernetes.io/hostname
             operator: In
             values:
-            - worker-1
+            - bench-worker
 
 
 provider:
@@ -25,11 +25,11 @@ provider:
 
   resources:
     limits:
-      cpu: 8000m
-      memory: 32768Mi
+      cpu: 4000m
+      memory: 4096Mi #32768Mi
     requests:
-      cpu: 8000m
-      memory: 32768Mi
+      cpu: 4000m
+      memory: 4096Mi #32768Mi
 
   affinity:
     nodeAffinity:
@@ -39,14 +39,14 @@ provider:
           - key: kubernetes.io/hostname
             operator: In
             values:
-            - worker-2
+            - bench-worker2
 
 
 hollow:
   version: giorio94/kubemark:v1.21.4-custom
   kubectlImage: bitnami/kubectl:1.21
 
-  replicaCount: 100
+  replicaCount: 4
 
   kubeletResources:
     limits:
@@ -72,8 +72,8 @@ hollow:
           - key: kubernetes.io/hostname
             operator: NotIn
             values:
-            - worker-1
-            - worker-2
+            - bench-worker
+            - bench-worker2
 
 
 settings:
@@ -82,18 +82,20 @@ settings:
 
 
 liqo:
-  install: false
+  install: true
 
   repo: https://helm.liqo.io/
   chart: liqo
-  version: "v0.4.0"
+  version: "v0.7.2"
 
   namespace: liqo
 
   peer:
-    image: giorio94/liqo-peering-measurer:v0.5.0
-    consumer: true
-    provider: false
+    image: fra98/liqo-peering-measurer:v0.2.0
+    # consumer: true
+    # provider: false
+    consumer: false
+    provider: true
 
   extraLatency:
     enabled: false

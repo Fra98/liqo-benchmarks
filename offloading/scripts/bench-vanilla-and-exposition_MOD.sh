@@ -19,7 +19,7 @@ OUTPUT=$4
 
 RUNS=1
 DEPLOYS=1
-PODS_ARRAY=(30)
+PODS_ARRAY=(5)
 
 NAMESPACE="liqo-benchmarks"
 
@@ -32,7 +32,8 @@ CONSUMER_EXEC="$KUBECTL exec $CONSUMER -c k3s-server -- /bin/sh"
 PROVIDER_EXEC="$KUBECTL exec $PROVIDER -c k3s-server -- /bin/sh"
 CONSUMER_KUBECTL="$KUBECTL exec $CONSUMER -c k3s-server -- kubectl"
 PROVIDER_KUBECTL="$KUBECTL exec $PROVIDER -c k3s-server -- kubectl"
-
+CONSUMER_LIQOCTL="kubectl -n liqo-benchmarks exec -it $CONSUMER -c k3s-server -- liqoctl --kubeconfig /etc/rancher/k3s/k3s.yaml"
+PROVIDER_LIQOCTL="kubectl -n liqo-benchmarks exec -it $PROVIDER -c k3s-server -- liqoctl --kubeconfig /etc/rancher/k3s/k3s.yaml"
 
 echo "Copying the measurer manifests to the provider..."
 tar cf - -C "$(dirname $OFFLOADING_MANIFEST)" "$(basename $OFFLOADING_MANIFEST)" | \
@@ -49,6 +50,11 @@ tar cf - -C "$(dirname $EXPOSITION_MANIFEST_REMOTE)" "$(basename $EXPOSITION_MAN
 $CONSUMER_EXEC -c 'cat <<EOF > /tmp/converter
 sed "s/__DEPLOYS__/\$2/" "\$1" | sed "s/__PODS__/\$3/" | sed "s/__ENDPOINTS__/\$(( \$2*\$3 ))/" > "\$1-current"
 EOF'
+
+# Copying the liqoctl binary
+cat $HOME/apps/liqoctl-v0.7.2 | kubectl exec -i -n liqo-benchmarks $CONSUMER -c k3s-server "--" sh -c "cat > /bin/liqoctl && chmod +x /bin/liqoctl"
+cat $HOME/apps/liqoctl-v0.7.2 | kubectl exec -i -n liqo-benchmarks $PROVIDER -c k3s-server "--" sh -c "cat > /bin/liqoctl && chmod +x /bin/liqoctl"
+
 
 mkdir --parent "$OUTPUT"
 echo "Ready to start executing the benchmarks"
@@ -74,15 +80,7 @@ for RUN in $(seq 1 $RUNS); do
             "$OUTPUT/offloading-vanilla-$DEPLOYS-$PODS-$RUN.txt"
 
         echo "Create the NamespaceOffloading resource and wait for namespace creation"
-        $PROVIDER_EXEC -c 'cat <<EOF | kubectl apply -f -
-apiVersion: offloading.liqo.io/v1alpha1
-kind: NamespaceOffloading
-metadata:
-  name: offloading
-  namespace: offloading-benchmark
-spec:
-  namespaceMappingStrategy: EnforceSameName
-EOF'
+        $PROVIDER_LIQOCTL offload namespace offloading-benchmark --namespace-mapping-strategy EnforceSameName --pod-offloading-strategy LocalAndRemote
         sleep 5 # Should be more than enough
 
         echo "Starting the measurer on the consumer cluster..."

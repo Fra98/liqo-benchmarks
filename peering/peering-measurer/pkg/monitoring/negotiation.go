@@ -73,7 +73,7 @@ func handleResourceOfferAcceptance(ro *sharingv1alpha1.ResourceOffer) {
 	}
 
 	if ro.Status.Phase == sharingv1alpha1.ResourceOfferAccepted {
-		id := ro.Spec.ClusterId
+		id := ro.Spec.ClusterID
 		M().ClusterID(id).SetResourceNegotiationEndTimestamp(time.Now())
 	}
 }
