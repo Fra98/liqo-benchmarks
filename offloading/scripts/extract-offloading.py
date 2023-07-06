@@ -10,10 +10,11 @@ def read(path, file):
         # Loop through the lines to extract the information of interest.
         for line in input:
             if line.startswith("Start: "):
-                start = int(line.removeprefix("Start: ").split(' ')[0])
+                start = int(line.removeprefix("Start: ").split(' ')[0]) # Python >= 3.9
+                # start = int(line[len("Start: "):].split(' ')[0]) # Python < 3.9
             if line.startswith("End  : "):
-                end = int(line.removeprefix("End  : ").split(' ')[0])
-
+                end = int(line.removeprefix("End  : ").split(' ')[0]) # Python >= 3.9
+                # end = int(line[len("End  : "):].split(' ')[0]) # Python < 3.9
         # Return the total time
         return np.array([end - start]) / 1e9
 
@@ -46,7 +47,8 @@ if __name__ == "__main__":
                 file = f"offloading-{type}-1-{pods}-{run+1}.txt"
                 data.append(read(args.input_path, file))
 
-            inner = inner.append(to_line(pods, np.stack(data), columns))
+            # inner = inner.append(to_line(pods, np.stack(data), columns))        # old pandas
+            inner = pd.concat([inner, to_line(pods, np.stack(data), columns)])  # new pandas
 
         output = pd.concat([output, inner], axis=1)
 
