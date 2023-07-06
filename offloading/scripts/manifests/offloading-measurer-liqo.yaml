@@ -36,7 +36,7 @@ spec:
         app.kubernetes.io/name: offloading-measurer
     spec:
       containers:
-      - image: fra98/liqo-offloading-measurer:v0.2.0
+      - image: fra98/liqo-offloading-measurer:v0.8.3
         imagePullPolicy: IfNotPresent
         name: offloading-measurer
         args:

@@ -8,8 +8,10 @@ A kubemark docker image (including the patch), can be generated through:
 git clone https://github.com/kubernetes/kubernetes.git
 cd kubernetes
 
-git checkout v1.21.4
-git am 0001-hollow-kubelet-respect-pod-CIDR.patch
+# git checkout v1.21.4
+# git am 0001-hollow-kubelet-respect-pod-CIDR.patch
+git checkout v1.25.0
+git patch 0001-hollow-kubelet-respect-pod-CIDR-v1.25.0.patch
 
 make WHAT=cmd/kubemark
 mv _output/bin/kubemark cluster/images/kubemark/
